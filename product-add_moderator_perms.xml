@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<product productid="add_moderator_perms" active="1">
+	<title>Moderators Advanced Permissions</title>
+	<description />
+	<version>0.1</version>
+	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=add_moderator_perms]]></url>
+	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=add_moderator_perms]]></versioncheckurl>
+	<apm_releasedate>0</apm_releasedate>
+	<apm_author />
+	<apm_relatedurl />
+	<apm_extrainfo>Adds 2 new permissions: move threads (when manage threads disabled), allow posts edit only in sticky threads (convenient for FAQ).</apm_extrainfo>
+	<apm_extraedit />
+	<dependencies>
+	</dependencies>
+	<codes>
+		<code version="*">
+			<installcode><![CDATA[if ($vbulletin->products['tms'])
+{
+	require_once(DIR . '/includes/adminfunctions_templateedits.php');
+	install_templateedits($info, $arr, $active);
+}]]></installcode>
+			<uninstallcode><![CDATA[if ($vbulletin->products['tms'])
+{
+	require_once(DIR . '/includes/adminfunctions_templateedits.php');
+	uninstall_templateedits($vbulletin->GPC['productid']);
+}]]></uninstallcode>
+		</code>
+	</codes>
+	<templates>
+	</templates>
+	<plugins>
+		<plugin active="1" executionorder="1">
+			<title>Add moderator options</title>
+			<hookname>admin_moderator_form</hookname>
+			<phpcode><![CDATA[print_description_row($vbphrase['addmodperms_options'], false, 2, 'thead');
+print_yes_no_row($vbphrase['addmodperms_can_edit_sticky'], 'modperms[addmodperms_edit_sticky]', $moderator['addmodperms_edit_sticky']);
+print_yes_no_row($vbphrase['addmodperms_can_move_threads'], 'modperms[addmodperms_move_threads]', $moderator['addmodperms_move_threads']);]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Check for edit post permission</title>
+			<hookname>editpost_start</hookname>
+			<phpcode><![CDATA[if( $_REQUEST['do'] != 'deletepost'
+    && can_moderate( $threadinfo['forumid'] ) )
+{
+  $addmodperms_sticky_only = ( can_moderate( $threadinfo['forumid'], 'addmodperms_edit_sticky'  ) ) ? true : false;
+
+  if( $addmodperms_sticky_only && ! $threadinfo['sticky'] )
+  {
+    print_no_permission();
+  }
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Modify thread manage options</title>
+			<hookname>parse_templates</hookname>
+			<phpcode><![CDATA[//
+//  ATTENTION! It's better to use TMS - faster.
+//
+
+if( THIS_SCRIPT == 'showthread' )
+{
+  $search = array(
+      '".(($show[\'movethread\']) ? ("<div><label for=\"ao_mvt\"><input type=\"radio\" name=\"do\" id=\"ao_mvt\" value=\"movethread\" />$vbphrase[move_thread]</label></div>',
+      '<div><label for=\"ao_cpt\"><input type=\"radio\" name=\"do\" id=\"ao_cpt\" value=\"copythread\" />$vbphrase[copy_thread]</label></div>") : (""))."',
+      '".(($show[\'movethread\']) ? ("<option value=\"movethread\">$vbphrase[move_thread]</option>',
+      '<option value=\"copythread\">$vbphrase[copy_thread]</option>") : (""))."',
+    );
+
+  $replace = array(
+      '".(($show[\'movethread\']) ? ("<div><label for=\"ao_mvt\"><input type=\"radio\" name=\"do\" id=\"ao_mvt\" value=\"movethread\" />$vbphrase[move_thread]</label></div>") : (""))."',
+      '".(($show[\'copythread\']) ? ("<div><label for=\"ao_cpt\"><input type=\"radio\" name=\"do\" id=\"ao_cpt\" value=\"copythread\" />$vbphrase[copy_thread]</label></div>") : (""))."',
+      '".(($show[\'movethread\']) ? ("<option value=\"movethread\">$vbphrase[move_thread]</option>") : (""))."',
+      '".(($show[\'copythread\']) ? ("<option value=\"copythread\">$vbphrase[copy_thread]</option>") : (""))."',
+    );
+
+  if( isset( $vbulletin->templatecache['SHOWTHREAD'] ) )
+    $vbulletin->templatecache['SHOWTHREAD'] = str_replace(
+        $search,
+        $replace,
+        $vbulletin->templatecache['SHOWTHREAD']
+      );
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title><![CDATA[Hide 'edit' post button in non-sticky threads]]></title>
+			<hookname>postbit_display_complete</hookname>
+			<phpcode><![CDATA[if( $this->post['editlink'] && ! $thread['sticky']
+    && can_moderate( $this->thread['forumid'] ) )
+{
+  $this->post['editlink'] = ( can_moderate( $this->thread['forumid'], 'addmodperms_edit_sticky'  ) ) ? false : true;
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Modify manage thread options</title>
+			<hookname>showthread_complete</hookname>
+			<phpcode><![CDATA[if( !$show['movethread'] )
+{
+  $show['copythread'] = false;
+  $show['movethread'] = can_moderate( $threadinfo['forumid'], 'addmodperms_move_threads' ) ? true : false;
+}
+else
+{
+  $show['copythread'] = true;
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Check for move thread permission</title>
+			<hookname>threadmanage_start</hookname>
+			<phpcode><![CDATA[if( ( $_REQUEST['do'] == 'movethread' OR $_POST['do'] == 'domovethread' )
+    && !can_moderate( $threadinfo['forumid'], 'canmanagethreads'         )
+    &&  can_moderate( $threadinfo['forumid'], 'addmodperms_move_threads' ) )
+{
+  $vbulletin->bf_misc_moderatorpermissions['canmanagethreads'] =
+    $vbulletin->bf_misc_moderatorpermissions['addmodperms_move_threads'];
+}]]></phpcode>
+		</plugin>
+	</plugins>
+	<phrases>
+		<phrasetype name="GLOBAL" fieldname="global">
+			<phrase name="addmodperms_can_edit_sticky" date="1250770443" username="Dimit" version=""><![CDATA[Can edit posts ONLY in sticky thread]]></phrase>
+			<phrase name="addmodperms_can_move_threads" date="1250593795" username="Dimit" version=""><![CDATA[Can move threads]]></phrase>
+			<phrase name="addmodperms_options" date="1250593740" username="Dimit" version=""><![CDATA[Additional Moderator Permissions Options]]></phrase>
+		</phrasetype>
+	</phrases>
+	<options>
+	</options>
+	<helptopics>
+	</helptopics>
+	<cronentries>
+	</cronentries>
+	<faqentries>
+	</faqentries>
+	<templateedits>
+		<templateedit template="SHOWTHREAD" varname="addmodperms_split_move_1" username="Dimit" version="3.8.0 Release Candidate 3" dateline="1250766798" searchorder="5" active="0">
+			<title>Split move thread to move and copy (1)</title>
+			<searchstr><![CDATA[		<if condition="$show['movethread']"><div><label for="ao_mvt"><input type="radio" name="do" id="ao_mvt" value="movethread" />$vbphrase[move_thread]</label></div>
+		<div><label for="ao_cpt"><input type="radio" name="do" id="ao_cpt" value="copythread" />$vbphrase[copy_thread]</label></div></if>]]></searchstr>
+			<replacestr><![CDATA[		<if condition="$show['movethread']"><div><label for="ao_mvt"><input type="radio" name="do" id="ao_mvt" value="movethread" />$vbphrase[move_thread]</label></div></if>
+		<if condition="$show['copythread']"><div><label for="ao_cpt"><input type="radio" name="do" id="ao_cpt" value="copythread" />$vbphrase[copy_thread]</label></div></if>]]></replacestr>
+		</templateedit>
+		<templateedit template="SHOWTHREAD" varname="addmodperms_split_move_2" username="Dimit" version="3.8.0 Release Candidate 3" dateline="1250766311" searchorder="5" active="0">
+			<title>Split move thread to move and copy (2)</title>
+			<searchstr><![CDATA[				<if condition="$show['movethread']"><option value="movethread">$vbphrase[move_thread]</option>
+				<option value="copythread">$vbphrase[copy_thread]</option></if>]]></searchstr>
+			<replacestr><![CDATA[				<if condition="$show['movethread']"><option value="movethread">$vbphrase[move_thread]</option></if>
+				<if condition="$show['copythread']"><!--<option value="copythread">$vbphrase[copy_thread]</option>--></if>]]></replacestr>
+		</templateedit>
+	</templateedits>
+</product>
