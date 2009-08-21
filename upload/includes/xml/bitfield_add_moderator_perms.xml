@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<bitfields product="add_moderator_perms">
+	<bitfielddefs>
+		<group name="misc">
+			<group name="moderatorpermissions">
+				<bitfield name="addmodperms_edit_sticky"  default="1">67108864</bitfield>
+				<bitfield name="addmodperms_move_threads"            >134217728</bitfield>
+			</group>
+		</group>
+	</bitfielddefs>
+</bitfields>
