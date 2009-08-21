@@ -3,10 +3,10 @@
 <product productid="add_moderator_perms" active="1">
 	<title>Moderators Advanced Permissions</title>
 	<description />
-	<version>0.1</version>
+	<version>0.2</version>
 	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=add_moderator_perms]]></url>
 	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=add_moderator_perms]]></versioncheckurl>
-	<apm_releasedate>0</apm_releasedate>
+	<apm_releasedate>1250802000</apm_releasedate>
 	<apm_author />
 	<apm_relatedurl />
 	<apm_extrainfo>Adds 2 new permissions: move threads (when manage threads disabled), allow posts edit only in sticky threads (convenient for FAQ).</apm_extrainfo>
@@ -39,16 +39,18 @@ print_yes_no_row($vbphrase['addmodperms_can_move_threads'], 'modperms[addmodperm
 		</plugin>
 		<plugin active="1" executionorder="5">
 			<title>Check for edit post permission</title>
-			<hookname>editpost_start</hookname>
-			<phpcode><![CDATA[if( $_REQUEST['do'] != 'deletepost'
-    && can_moderate( $threadinfo['forumid'] ) )
+			<hookname>global_setup_complete</hookname>
+			<phpcode><![CDATA[if(    defined( 'THIS_SCRIPT' )
+    && THIS_SCRIPT == 'editpost'
+    && ( empty( $_REQUEST['do'] ) || $_REQUEST['do'] != 'deletepost' )
+    && is_array( $threadinfo )
+    && !empty( $threadinfo )
+    && $threadinfo['sticky']
+    && can_moderate( $threadinfo['forumid'] )
+    && can_moderate( $threadinfo['forumid'], 'addmodperms_edit_sticky'  ) )
 {
-  $addmodperms_sticky_only = ( can_moderate( $threadinfo['forumid'], 'addmodperms_edit_sticky'  ) ) ? true : false;
-
-  if( $addmodperms_sticky_only && ! $threadinfo['sticky'] )
-  {
-    print_no_permission();
-  }
+  $vbulletin->bf_misc_moderatorpermissions['caneditposts'] =
+    $vbulletin->bf_misc_moderatorpermissions['addmodperms_edit_sticky'];
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -83,12 +85,14 @@ if( THIS_SCRIPT == 'showthread' )
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
-			<title><![CDATA[Hide 'edit' post button in non-sticky threads]]></title>
+			<title><![CDATA[Show 'edit' post button in sticky threads]]></title>
 			<hookname>postbit_display_complete</hookname>
-			<phpcode><![CDATA[if( $this->post['editlink'] && ! $thread['sticky']
-    && can_moderate( $this->thread['forumid'] ) )
+			<phpcode><![CDATA[if(  ! $this->post['editlink']
+    && $thread['sticky']
+    && can_moderate( $this->thread['forumid'] )
+    && can_moderate( $this->thread['forumid'], 'addmodperms_edit_sticky'  ) )
 {
-  $this->post['editlink'] = ( can_moderate( $this->thread['forumid'], 'addmodperms_edit_sticky'  ) ) ? false : true;
+  $this->post['editlink'] = true;
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -118,7 +122,7 @@ else
 	</plugins>
 	<phrases>
 		<phrasetype name="GLOBAL" fieldname="global">
-			<phrase name="addmodperms_can_edit_sticky" date="1250770443" username="Dimit" version=""><![CDATA[Can edit posts ONLY in sticky thread]]></phrase>
+			<phrase name="addmodperms_can_edit_sticky" date="1250876265" username="Dimit" version=""><![CDATA[Can edit posts in sticky thread]]></phrase>
 			<phrase name="addmodperms_can_move_threads" date="1250593795" username="Dimit" version=""><![CDATA[Can move threads]]></phrase>
 			<phrase name="addmodperms_options" date="1250593740" username="Dimit" version=""><![CDATA[Additional Moderator Permissions Options]]></phrase>
 		</phrasetype>
