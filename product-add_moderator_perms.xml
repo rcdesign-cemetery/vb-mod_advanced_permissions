@@ -14,18 +14,6 @@
 	<dependencies>
 	</dependencies>
 	<codes>
-		<code version="*">
-			<installcode><![CDATA[if ($vbulletin->products['tms'])
-{
-	require_once(DIR . '/includes/adminfunctions_templateedits.php');
-	install_templateedits($info, $arr, $active);
-}]]></installcode>
-			<uninstallcode><![CDATA[if ($vbulletin->products['tms'])
-{
-	require_once(DIR . '/includes/adminfunctions_templateedits.php');
-	uninstall_templateedits($vbulletin->GPC['productid']);
-}]]></uninstallcode>
-		</code>
 	</codes>
 	<templates>
 	</templates>
@@ -136,19 +124,5 @@ else
 	<faqentries>
 	</faqentries>
 	<templateedits>
-		<templateedit template="SHOWTHREAD" varname="addmodperms_split_move_1" username="Dimit" version="3.8.0 Release Candidate 3" dateline="1250766798" searchorder="5" active="0">
-			<title>Split move thread to move and copy (1)</title>
-			<searchstr><![CDATA[		<if condition="$show['movethread']"><div><label for="ao_mvt"><input type="radio" name="do" id="ao_mvt" value="movethread" />$vbphrase[move_thread]</label></div>
-		<div><label for="ao_cpt"><input type="radio" name="do" id="ao_cpt" value="copythread" />$vbphrase[copy_thread]</label></div></if>]]></searchstr>
-			<replacestr><![CDATA[		<if condition="$show['movethread']"><div><label for="ao_mvt"><input type="radio" name="do" id="ao_mvt" value="movethread" />$vbphrase[move_thread]</label></div></if>
-		<if condition="$show['copythread']"><div><label for="ao_cpt"><input type="radio" name="do" id="ao_cpt" value="copythread" />$vbphrase[copy_thread]</label></div></if>]]></replacestr>
-		</templateedit>
-		<templateedit template="SHOWTHREAD" varname="addmodperms_split_move_2" username="Dimit" version="3.8.0 Release Candidate 3" dateline="1250766311" searchorder="5" active="0">
-			<title>Split move thread to move and copy (2)</title>
-			<searchstr><![CDATA[				<if condition="$show['movethread']"><option value="movethread">$vbphrase[move_thread]</option>
-				<option value="copythread">$vbphrase[copy_thread]</option></if>]]></searchstr>
-			<replacestr><![CDATA[				<if condition="$show['movethread']"><option value="movethread">$vbphrase[move_thread]</option></if>
-				<if condition="$show['copythread']"><!--<option value="copythread">$vbphrase[copy_thread]</option>--></if>]]></replacestr>
-		</templateedit>
 	</templateedits>
 </product>
