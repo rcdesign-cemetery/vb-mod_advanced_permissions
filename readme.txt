@@ -8,4 +8,5 @@ This vB Addon allows to set 2 new permissions to forum moderators:
 2. Limit "Post Edit" permission to sticky threads. Good, when you don't want
    moderators to edit any post, but allow them edit sticky FAQ threads.
 
-Not published at vborg.
+Published at vborg:
+http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=add_moderator_perms
