@@ -3,7 +3,7 @@
 <product productid="add_moderator_perms" active="1">
 	<title>Moderators Advanced Permissions</title>
 	<description />
-	<version>0.2</version>
+	<version>0.3</version>
 	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=add_moderator_perms]]></url>
 	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=add_moderator_perms]]></versioncheckurl>
 	<apm_releasedate>1250802000</apm_releasedate>
@@ -48,28 +48,35 @@ print_yes_no_row($vbphrase['addmodperms_can_move_threads'], 'modperms[addmodperm
 //  ATTENTION! It's better to use TMS - faster.
 //
 
-if( THIS_SCRIPT == 'showthread' )
+if (array_key_exists('SHOWTHREAD', $vbulletin->templatecache))
 {
-  $search = array(
-      '".(($show[\'movethread\']) ? ("<div><label for=\"ao_mvt\"><input type=\"radio\" name=\"do\" id=\"ao_mvt\" value=\"movethread\" />$vbphrase[move_thread]</label></div>',
-      '<div><label for=\"ao_cpt\"><input type=\"radio\" name=\"do\" id=\"ao_cpt\" value=\"copythread\" />$vbphrase[copy_thread]</label></div>") : (""))."',
-      '".(($show[\'movethread\']) ? ("<option value=\"movethread\">$vbphrase[move_thread]</option>',
-      '<option value=\"copythread\">$vbphrase[copy_thread]</option>") : (""))."',
-    );
+    
+    $amp_find = 'if ($show[\'movethread\']) {
+					$final_rendered .= \'
+								<li><label><input type="radio" name="do" value="movethread" tabindex="3" /> \' . vB_Template_Runtime::parsePhrase("move_thread") . \'&hellip;</label></li>
+								<li><label><input type="radio" name="do" value="copythread" tabindex="4" /> \' . vB_Template_Runtime::parsePhrase("copy_thread") . \'&hellip;</label></li>					
+							\';
+				} else {
+			$final_rendered .= \'\';
+		}';
 
-  $replace = array(
-      '".(($show[\'movethread\']) ? ("<div><label for=\"ao_mvt\"><input type=\"radio\" name=\"do\" id=\"ao_mvt\" value=\"movethread\" />$vbphrase[move_thread]</label></div>") : (""))."',
-      '".(($show[\'copythread\']) ? ("<div><label for=\"ao_cpt\"><input type=\"radio\" name=\"do\" id=\"ao_cpt\" value=\"copythread\" />$vbphrase[copy_thread]</label></div>") : (""))."',
-      '".(($show[\'movethread\']) ? ("<option value=\"movethread\">$vbphrase[move_thread]</option>") : (""))."',
-      '".(($show[\'copythread\']) ? ("<option value=\"copythread\">$vbphrase[copy_thread]</option>") : (""))."',
-    );
 
-  if( isset( $vbulletin->templatecache['SHOWTHREAD'] ) )
-    $vbulletin->templatecache['SHOWTHREAD'] = str_replace(
-        $search,
-        $replace,
-        $vbulletin->templatecache['SHOWTHREAD']
-      );
+
+    
+    $amp_replace = 'if ($show[\'movethread\'])
+					{
+					    $final_rendered .= \'
+								<li><label><input type="radio" name="do" value="movethread" tabindex="3" /> \' . vB_Template_Runtime::parsePhrase("move_thread") . \'&hellip;</label></li>
+							\';
+					}
+					if ($show[\'copythread\'])
+					{
+					    $final_rendered .= \'
+								<li><label><input type="radio" name="do" value="copythread" tabindex="4" /> \' . vB_Template_Runtime::parsePhrase("copy_thread") . \'&hellip;</label></li>
+							\';
+					}';
+    $vbulletin->templatecache['SHOWTHREAD'] = str_replace($amp_find, $amp_replace, $vbulletin->templatecache['SHOWTHREAD']);
+    unset($amp_find, $amp_replace);
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
