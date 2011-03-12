@@ -3,7 +3,7 @@
 <product productid="add_moderator_perms" active="1">
 	<title>Moderators Advanced Permissions</title>
 	<description />
-	<version>0.3</version>
+	<version>0.4</version>
 	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=add_moderator_perms]]></url>
 	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=add_moderator_perms]]></versioncheckurl>
 	<apm_releasedate>1250802000</apm_releasedate>
@@ -48,9 +48,10 @@ print_yes_no_row($vbphrase['addmodperms_can_move_threads'], 'modperms[addmodperm
 //  ATTENTION! It's better to use TMS - faster.
 //
 
-if (array_key_exists('SHOWTHREAD', $vbulletin->templatecache))
+if (!$show['guest'] AND array_key_exists('SHOWTHREAD', $vbulletin->templatecache))
 {
-    
+    $before_patch = $vbulletin->templatecache['SHOWTHREAD'];
+
     $amp_find = 'if ($show[\'movethread\']) {
 					$final_rendered .= \'
 								<li><label><input type="radio" name="do" value="movethread" tabindex="3" /> \' . vB_Template_Runtime::parsePhrase("move_thread") . \'&hellip;</label></li>
@@ -76,6 +77,22 @@ if (array_key_exists('SHOWTHREAD', $vbulletin->templatecache))
 							\';
 					}';
     $vbulletin->templatecache['SHOWTHREAD'] = str_replace($amp_find, $amp_replace, $vbulletin->templatecache['SHOWTHREAD']);
+
+    if ($before_patch == $vbulletin->templatecache['SHOWTHREAD'])
+    {
+        $err_message = sprintf("Product '%s', error in hook %s : can't modify template '%s'",
+                            'Moderators Advanced Permissions',
+                            'parse_templates',
+                            'SHOWTHREAD');
+        error_log($err_message); // Send to PHP error log
+        if ($vbulletin->debug)
+        {
+            trigger_error($err_message, E_USER_WARNING); // Display on page
+            require_once(DIR . '/includes/functions_log_error.php');
+            log_vbulletin_error($err_message, 'php'); // Send to vB error log
+        }
+        unset($err_message, $before_patch);
+    }
     unset($amp_find, $amp_replace);
 }]]></phpcode>
 		</plugin>
