@@ -104,7 +104,7 @@ if (!$show['guest'] AND array_key_exists('SHOWTHREAD', $vbulletin->templatecache
     && can_moderate( $this->thread['forumid'] )
     && can_moderate( $this->thread['forumid'], 'addmodperms_edit_sticky'  ) )
 {
-  $this->post['editlink'] = true;
+  $this->post['editlink'] = fetch_seo_url('editpost', $this->post, array('do' => 'editpost'));
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
