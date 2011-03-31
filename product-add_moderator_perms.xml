@@ -3,7 +3,7 @@
 <product productid="add_moderator_perms" active="1">
 	<title>Moderators Advanced Permissions</title>
 	<description />
-	<version>0.4</version>
+	<version>0.5</version>
 	<url><![CDATA[http://www.vbulletin.org/forum/misc.php?do=producthelp&pid=add_moderator_perms]]></url>
 	<versioncheckurl><![CDATA[http://www.vbulletin.org/forum/misc.php?do=productcheck&pid=add_moderator_perms]]></versioncheckurl>
 	<apm_releasedate>1250802000</apm_releasedate>
